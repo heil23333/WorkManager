@@ -18,10 +18,22 @@ public class UploadWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        Data data = getInputData();
-        String s = data.getString("图片");
+        //这里不是主线程哦
+        Data inputData = getInputData();
+        String s = inputData.getString("图片");
+        Data outputData = new Data.Builder()
+                .putString("result", (s == null ? "失败" : "成功"))
+                .putString("worker", "UploadWorker")
+                .build();
         uploadImages(s);
-        return Result.success();
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return Result.success(outputData);
+//        return Result.retry();//返回retry的话会尝试重试
     }
 
     private void uploadImages(String s) {
